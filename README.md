@@ -23,7 +23,7 @@ cmap <Tab> <Plug>(cheapcmd-expand)
 
 "for cmdwin
 aug cheapcmd-settings
-  sutocmd!
+  autocmd!
   autocmd CmdwinEnter * call s:define_cmdwin_mappings()
 aug END
 function! s:define_cmdwin_mappings()
