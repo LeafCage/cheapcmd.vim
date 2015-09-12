@@ -181,7 +181,6 @@ function! s:WildMode.fire() "{{{
     if surplus!=''
       call feedkeys(substitute(surplus, "\<Esc>", "\<C-c>", "g"), 'm')
     end
-    let self._is_finished = 1
   end
   if self._wildlist!=[]
     cnoremap <expr><Plug>(cheapcmd:showlist)   cheapcmd#_showlist()
@@ -233,6 +232,8 @@ function! s:newWildMenu(cands, lead, left, right, wildlist) "{{{
   let obj._save_stl = getwinvar(obj._save_lastwinnr, '&stl')
   let obj._save_wnr = winnr()
   let obj._save_cmdheight = &l:cmdheight
+  let obj._save_guicursor = &gcr
+  let obj._save_t_ve = &t_ve
   let obj.i = 0
   let obj.j = 1
   return obj
@@ -242,6 +243,9 @@ function! s:WildMenu.start() abort "{{{
   if self._wildlist!=[]
     set nomore
     let &l:cmdheight = self._wildlist[1] + 1
+  end
+  if self._right!=''
+    setl gcr=a:block-blinkon0-NONE t_ve=
   end
   let def = {"\<Left>": '_prev', "\<C-p>": '_prev', "\<S-Tab>": '_prev', "\<Right>": '_next', "\<C-n>": '_next'}
   let def[nr2char(&wc)] = '_next'
@@ -267,6 +271,8 @@ endfunction
 function! s:WildMenu.finalize() "{{{
   call setwinvar(self._save_lastwinnr, '&stl', self._save_stl)
   let &l:cmdheight = self._save_cmdheight
+  let &l:gcr = self._save_guicursor
+  let &l:t_ve = self._save_t_ve
   redraw!
   let &more = self._save_more
   redraw
@@ -299,7 +305,14 @@ function! s:WildMenu._draw() "{{{
   end
   call setwinvar(self._save_lastwinnr, '&stl', stl)
   redraw
-  echo get(self._wildlist, 0, ''). ":". self._left. self.get_crrstr(). self._right
+  echo get(self._wildlist, 0, ''). ":". self._left. self.get_crrstr()
+  if self._right==''
+    return
+  end
+  echoh Cursor
+  echon self._right[0]
+  echoh NONE
+  echon self._right[1:]
 endfunction
 "}}}
 function! s:WildMenu._prev() "{{{
