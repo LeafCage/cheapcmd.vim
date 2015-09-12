@@ -3,6 +3,7 @@ let s:save_cpo = &cpo| set cpo&vim
 scriptencoding utf-8
 "=============================================================================
 let s:WILDLIST_MAX_HEIGHT = 19
+let s:LEADBGN_PAT = '^\s*[,;]*\%(\%(\d\+\|[.$%]\|/.\{-}/\|?.\{-}?\|\\[/?&]\|''[''`"^.<>()[\]{}[:alnum:]]\)\s*\%([+-]\d*\s*\)\?[,;]*\s*\)*\zs\a\w\+$'
 function! s:get_cands(lead) "{{{
   let cmds = map(__cheapcmd#lim#misc#get_cmdresults(':command')[1:], 'matchstr(v:val, ''\u\w*'')')
   let pat = '\C^'. substitute(toupper(a:lead), '.', '\0\\l*', 'g')
@@ -346,7 +347,7 @@ endfunction
 function! cheapcmd#expand() "{{{
   let cmdline = getcmdline()
   let cmdpos = getcmdpos()
-  let leadbgn = match(cmdline[: cmdpos-2], '^.\{-}\zs\a\w\+$')
+  let leadbgn = match(cmdline[: cmdpos-2], s:LEADBGN_PAT)
   if exists('s:wmd') && s:wmd.is_succeeded(cmdline, cmdpos)
     call s:wmd.update_lead(leadbgn, cmdpos)
     return s:wmd.fire()
@@ -371,7 +372,7 @@ function! cheapcmd#cmdwin_cmpl() "{{{
     return "\<C-n>"
   end
   let line = getline('.')
-  let lead = matchstr(line[: col('.')-2], '^.\{-}\zs\a\w\+$')
+  let lead = matchstr(line[: col('.')-2], s:LEADBGN_PAT)
   if lead == ''
     return "\<C-x>\<C-v>"
   end
@@ -383,7 +384,7 @@ endfunction
 "}}}
 function! cheapcmd#_cmdwin_cmpl(findstart, base) "{{{
   if a:findstart
-    return !exists('s:_save_omnifunc') ? -1 : match(getline('.')[: col('.')-2], '^.\{-}\zs\a\w\+$')
+    return !exists('s:_save_omnifunc') ? -1 : match(getline('.')[: col('.')-2], s:LEADBGN_PAT)
   end
   let &l:omnifunc = s:_save_omnifunc
   unlet s:_save_omnifunc
