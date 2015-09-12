@@ -140,6 +140,12 @@ function! s:WildMode.is_succeeded(cmdline, cmdpos) "{{{
   return !self._is_finished && self.i+1 < self._modelen && self._line ==# a:cmdline && self._pos == a:cmdpos
 endfunction
 "}}}
+function! s:WildMode.update_lead(leadbgn, cmdpos) "{{{
+  let self.leadbgn = a:leadbgn
+  let self.lead = self._line[a:leadbgn : a:cmdpos-2]
+  let self.leadlen = len(self.lead)
+endfunction
+"}}}
 function! s:WildMode.showlist() "{{{
   let &l:cmdheight = self._wildlist[1] + 1
   redraw
@@ -208,7 +214,7 @@ function! s:WildMode._fill_longest() "{{{
     return self.lead
   end
   let self._line = self._get_left(). longest. self._line[self._pos-1 :]
-  let self._pos = self.leadbgn + len
+  let self._pos = self.leadbgn + len + 1
   return longest
 endfunction
 "}}}
@@ -329,6 +335,7 @@ function! cheapcmd#expand() "{{{
   let cmdpos = getcmdpos()
   let leadbgn = match(cmdline[: cmdpos-2], '^.\{-}\zs\a\w\+$')
   if exists('s:wmd') && s:wmd.is_succeeded(cmdline, cmdpos)
+    call s:wmd.update_lead(leadbgn, cmdpos)
     return s:wmd.fire()
   else
     unlet! s:wmd
