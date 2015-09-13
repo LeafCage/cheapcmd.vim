@@ -257,6 +257,9 @@ function! s:WildMenu.start() abort "{{{
   call self._draw()
   while 1
     let input = __cheapcmd#lim#cap#keymappings(def, {'transit': 1})
+    if get(input, 'surplus', '')[0]=="\x80" && input.surplus[1]=="\xfc"
+      continue
+    end
     if input=={} || !has_key(self, input.action)
       return [self.get_crrstr(), get(input, 'surplus', '')]
     end
