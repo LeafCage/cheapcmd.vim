@@ -4,14 +4,24 @@ cheapcmd.vim
 Introduction
 ------------
 
-*cheapcmd.vim* enable command-line-completion to expand short keyword of user-defined commands.
+**cheapcmd.vim** enable command-line-completion to expand short keyword of user-defined commands.  
+The short keyword consists of any alphabets appended colon(:) or semicolon(;) to end.
 
 e.g.)
-- `vhg`  -> `VimHelpGenerator`, `VimHelpGeneratorVirtual`
-- `vhgv` -> `VimHelpGeneratorVirtual`
-- `qr`   -> `QuickRun`
-- `cp`   -> `CtrlP`, `CtrlPBuffer`, `CtrlPClearAllCaches`, ... `cpfile`, `cprevious`
-- `cpb`  -> `CtrlPBuffer`
+- `vhg;`  -> `VimHelpGenerator`, `VimHelpGeneratorVirtual`
+- `vhgv;` -> `VimHelpGeneratorVirtual`
+- `qr;`   -> `QuickRun`
+- `cp:`   -> `CtrlP`, `CtrlPBuffer`, `CtrlPClearAllCaches`, ... `cpfile`, `cprevious`
+- `cpb:`  -> `CtrlPBuffer`
+- `cb;`  -> `ConflictMarkerBoth`, `CtrlPBuffer`
+
+
+The word started lower character and contained upper character or  
+the word contained hyphen is keyword, too.  
+
+- `unR`  -> `UniteRecordingBegin`, `UniteRecordingSave`, `UniteResume`
+- `unRes`  -> `UniteResume`
+- `un-rec`  -> `UniteRecordingBegin`, `UniteRecordingSave`
 
 
 Usage

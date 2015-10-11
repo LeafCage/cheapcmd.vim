@@ -3,20 +3,18 @@ let s:save_cpo = &cpo| set cpo&vim
 scriptencoding utf-8
 "=============================================================================
 let s:WILDLIST_MAX_HEIGHT = 19
-let s:LEADBGN_PAT = '^\s*[,;]*\%(\%(\d\+\|[.$%]\|/.\{-}/\|?.\{-}?\|\\[/?&]\|''[''`"^.<>()[\]{}[:alnum:]]\)\s*\%([+-]\d*\s*\)\?[,;]*\s*\)*\zs\a\w\+$'
+let s:LEADBGN_PAT = '^\s*[,;]*\%(\%(\d\+\|[.$%]\|/.\{-}/\|?.\{-}?\|\\[/?&]\|''[''`"^.<>()[\]{}[:alnum:]]\)\s*\%([+-]\d*\s*\)\?[,;]*\s*\)*\zs\%(\a\%(\w\+[;:]\+\|\w*-[-[:alnum:]]\{-}\w[;:]*\)\|\l\w*\u\w*[;:]*\)$'
 function! s:get_cands(lead) "{{{
   let cmds = map(__cheapcmd#lim#misc#get_cmdresults(':command')[1:], 'matchstr(v:val, ''\u\w*'')')
-  let pat = '\C^'. substitute(toupper(a:lead), '.', '\0\\l*', 'g')
-  return filter(cmds[:], 'v:val =~ pat') + sort(filter(cmds + s:bcmds, 'v:val =~ "^". a:lead'))
-endfunction
-"}}}
-let s:dir = expand('<sfile>:p:h:h'). '/cheapcmd'
-function! s:get_basiccmds() "{{{
-  if exists('s:bcmds')
-    return s:bcmds
+  let lead = substitute(a:lead, '[;:]\+$', '', '')
+  if lead =~# '-\|\u.*\l\|\l.*\u'
+    let pat = '^'. substitute(lead, '\(\%(^\l\|\u\|-\@<=\l\)[[:lower:][:digit:]]*\)-*', '\u\1\\l*', 'g')
+    return filter(cmds, 'v:val =~# pat')
   end
-  let path = s:dir. '/basiccmds'
-  return filereadable(path) ? filter(readfile(path), 'exists(":".v:val)') : []
+  let pat = '^'. substitute(lead, '.', '\u\0\\l*', 'g')
+  let ret = filter(cmds[:], 'v:val =~# pat')
+  let pat2 = substitute(lead, '.', '\u\0\\w*', 'g')
+  return extend(ret, filter(filter(cmds, 'v:val !~# pat'), 'v:val =~# pat2'))
 endfunction
 "}}}
 
@@ -362,7 +360,6 @@ function! cheapcmd#expand() "{{{
     return ''
   end
   unlet! s:save_regularexpand_context
-  let s:bcmds = s:get_basiccmds()
   let s:wmd = s:newWildMode(leadbgn, cmdline, cmdpos)
   return s:wmd.fire()
 endfunction
@@ -379,7 +376,6 @@ function! cheapcmd#cmdwin_cmpl() "{{{
   if lead == ''
     return "\<C-x>\<C-v>"
   end
-  let s:bcmds = s:get_basiccmds()
   let s:_save_omnifunc = &omnifunc
   setl omnifunc=cheapcmd#_cmdwin_cmpl
   return "\<C-x>\<C-o>"
